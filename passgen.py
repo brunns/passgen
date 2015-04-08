@@ -37,18 +37,12 @@ def main(*argv):
 
     patterns = options.pattern.upper().split('|')
     try:
-        generated_password = generate_password(word_source(options.wordfile), options.symbols, patterns, options.max_length,
-                                               options.max_word_length)
+        with open(options.wordfile) as allwords:
+            generated_password = generate_password(random_items(allwords, 999), options.symbols, patterns, options.max_length, options.max_word_length)
         print generated_password
-    except PasswordsTooShort, passwords_too_short:
+    except PasswordsTooShort as passwords_too_short:
         print "Unable to generate password with length %s. " \
               "Try a shorter pattern, or a longer password length." % passwords_too_short.max_length
-
-
-def word_source(wordfile):
-    with open(wordfile) as words:
-        for word in words:
-            yield word
 
 
 def generate_password(word_source, symbol_set=DEFAULT_SYMBOLS,
@@ -56,7 +50,7 @@ def generate_password(word_source, symbol_set=DEFAULT_SYMBOLS,
                       max_word_length=DEFAULT_WORD_LENGTH):
     words = (word.strip()
              for word
-             in random_items(word_source, 999)
+             in word_source
              if len(word.strip()) < max_word_length and not word.strip().endswith("'s"))
 
     random_cased_words = (random.choice(CASE_FUNCTIONS)(word) for word in words)
