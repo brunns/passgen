@@ -4,7 +4,7 @@
 Simple Flask app for generating passwords
 '''
 
-from flask import Flask
+from flask import Flask, render_template, request
 from wordnik import swagger, WordsApi
 import logging
 import os
@@ -28,7 +28,10 @@ def word_source():
 
 @app.route('/')
 def password():
-    return passgen.generate_password(word_source=word_source())
+    symbols = request.args['symbols'] if request.args.has_key('symbols') else passgen.DEFAULT_SYMBOLS
+    logger.debug("symbols: %s", symbols)
+    generated_password = passgen.generate_password(word_source=word_source(), symbol_set=symbols)
+    return render_template('password.html', password=generated_password, symbols=symbols)
 
 if __name__ == "__main__":
     app.run(debug=True)
