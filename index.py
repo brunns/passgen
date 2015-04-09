@@ -22,7 +22,7 @@ def word_source():
     client = swagger.ApiClient(api_key, api_url)
     words_api = WordsApi.WordsApi(client)
     while True:
-        word = words_api.getRandomWord().word
+        word = words_api.getRandomWord().word  # URLError potential here
         logger.debug("word: %s", word)
         yield word
 
