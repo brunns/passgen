@@ -23,11 +23,28 @@ Generate password.
 logger = logging.getLogger(script_name)
 
 CASE_FUNCTIONS = (lambda x: x.lower(), lambda x: x.upper(), lambda x: x.capitalize())
+
 DEFAULT_PATTERN = "WSW2|W2WS|WS2W|W2SW|WSW2W|W2WSW"
 DEFAULT_WORDFILE = "/usr/share/dict/words"
 DEFAULT_SYMBOLS = "-=[];\"'\\,./!@$%^*()_:<>?"
 DEFAULT_MAX_LENGTH = 128
 DEFAULT_WORD_LENGTH = 12
+
+SYMBOLS_HELP = "List of symbols to pick from to include in password."
+PATTERN_HELP = "Password pattern. " \
+               "W=word, " \
+               "U=upper-cased word, " \
+               "L=lower-cased word, " \
+               "C=capitalised word, " \
+               "S=symbols, " \
+               "n=number with n (1-9) digits, " \
+               "' '=space. " \
+               "Multiple patterns may be provided, separated by '|' characters. " \
+               "One pattern will be selected at random.  " \
+               "http://xkcd.com/936/ style passwords can be generated with 'l l l l'."
+WORDFILE_HELP = "Text file containing list of words."
+MAX_LENGTH_HELP = "Maximum length for generated password."
+MAX_WORD_LENGTH_HELP = "Maximum length for word elements."
 
 
 def main(*argv):
@@ -38,13 +55,14 @@ def main(*argv):
     patterns = options.pattern.upper().split('|')
     try:
         with open(options.wordfile) as allwords:
-            generated_password = generate_password(random_items(allwords, 999), options.symbols, patterns, options.max_length, options.max_word_length)
+            generated_password = generate_password(random_items(allwords, 999), options.symbols, patterns,
+                                                   options.max_length, options.max_word_length)
         print generated_password
     except PasswordsTooShort as passwords_too_short:
         print "Unable to generate password with length %s. " \
               "Try a shorter pattern, or a longer password length." % passwords_too_short.max_length
 
-
+# TODO: Make me a class
 def generate_password(word_source, symbol_set=DEFAULT_SYMBOLS,
                       patterns=DEFAULT_PATTERN.upper().split('|'), max_length=DEFAULT_MAX_LENGTH,
                       max_word_length=DEFAULT_WORD_LENGTH):
@@ -132,25 +150,15 @@ def get_options(argv):
                            "information messages, or -vvv for debug messages.")
 
     parser.add_option("-p", "--pattern", action="store", default=DEFAULT_PATTERN,
-                      help="Password pattern. "
-                           "W=word, "
-                           "U=upper-cased word, "
-                           "L=lower-cased word, "
-                           "C=capitalised word, "
-                           "S=symbols, "
-                           "n=number with n (1-9) digits, "
-                           "' '=space. "
-                           "Multiple patterns may be provided, separated by '|' characters. "
-                           "One pattern will be selected at random.  Defaults to %default. "
-                           "http://xkcd.com/936/ style passwords can be generated with 'l l l l'.")
+                      help=PATTERN_HELP + " Defaults to %default. ")
     parser.add_option("-w", "--wordfile", action="store", default=DEFAULT_WORDFILE,
-                      help="Text file containing list of words. Defaults to %default.")
+                      help=WORDFILE_HELP + " Defaults to %default.")
     parser.add_option("-s", "--symbols", action="store", default=DEFAULT_SYMBOLS,
-                      help="List of symbols to pick from to include in password. Defaults to %default.")
+                      help=SYMBOLS_HELP + " Defaults to %default.")
     parser.add_option("-l", "--max-length", action="store", type="int", default=DEFAULT_MAX_LENGTH,
-                      help="Maximum length for generated password. Defaults to %default.")
+                      help=MAX_LENGTH_HELP + " Defaults to %default.")
     parser.add_option("--max-word-length", action="store", type="int", default=DEFAULT_WORD_LENGTH,
-                      help="Maximum length for word elements. Defaults to %default.")
+                      help=MAX_WORD_LENGTH_HELP + " Defaults to %default.")
 
     options, args = parser.parse_args(list(argv))
     script, args = args[0], args[1:]
