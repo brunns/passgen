@@ -4,6 +4,7 @@
 Generate password.
 """
 import optparse
+import re
 import os
 import sys
 import warnings
@@ -69,7 +70,7 @@ def generate_password(word_source, symbol_set=DEFAULT_SYMBOLS,
     words = (word.strip()
              for word
              in word_source
-             if len(word.strip()) < max_word_length and not word.strip().endswith("'s"))  # TODO: Filter out words with embedded non-letters
+             if len(word.strip()) < max_word_length and re.match(r'\w+$', word))
 
     random_cased_words = (random.choice(CASE_FUNCTIONS)(word) for word in words)
     upper = (word.upper() for word in words)
