@@ -35,12 +35,17 @@ def password():
     pattern = request.args['pattern'] if 'pattern' in request.args else passgen.DEFAULT_PATTERN
     max_length = int(request.args['max_length']) if 'max_length' in request.args else passgen.DEFAULT_MAX_LENGTH
 
-    generated_password = passgen.generate_password(word_source=word_source(), symbol_set=symbols,
-                                                   patterns=pattern.upper().split('|'),
-                                                   max_length=max_length)  # TODO: PasswordsTooShort potential here
+    try:
+        generated_password = passgen.generate_password(word_source=word_source(), symbol_set=symbols,
+                                                       patterns=pattern.upper().split('|'),
+                                                       max_length=max_length)
+        error = False
+    except passgen.PasswordsTooShort:
+        generated_password = passgen.PASSWORD_LENGTH_EXCEPTION_MESSAGE % max_length
+        error = True
     return render_template('password.html', password=generated_password, symbols=symbols, pattern=pattern,
                            max_length=max_length, symbols_help=passgen.SYMBOLS_HELP, pattern_help=passgen.PATTERN_HELP,
-                           maxlength_help=passgen.MAX_LENGTH_HELP)
+                           maxlength_help=passgen.MAX_LENGTH_HELP, error=error)
 
 
 if __name__ == "__main__":

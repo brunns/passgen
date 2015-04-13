@@ -47,6 +47,9 @@ WORDFILE_HELP = "Text file containing list of words."
 MAX_LENGTH_HELP = "Maximum length for generated password."
 MAX_WORD_LENGTH_HELP = "Maximum length for word elements."
 
+PASSWORD_LENGTH_EXCEPTION_MESSAGE = "Unable to generate password with length %s. " \
+                          "Try a shorter pattern, or a longer password length."
+
 
 def main(*argv):
     options, script, args, help = get_options(argv)
@@ -60,8 +63,7 @@ def main(*argv):
                                                    options.max_length, options.max_word_length)
         print generated_password
     except PasswordsTooShort as passwords_too_short:
-        print "Unable to generate password with length %s. " \
-              "Try a shorter pattern, or a longer password length." % passwords_too_short.max_length
+        print PASSWORD_LENGTH_EXCEPTION_MESSAGE % passwords_too_short.max_length
 
 # TODO: Make me a class
 def generate_password(word_source, symbol_set=DEFAULT_SYMBOLS,
