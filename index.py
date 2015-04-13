@@ -16,16 +16,17 @@ app = Flask(__name__)
 app.debug = bool(os.environ['DEBUG'])
 
 
-def word_source():
+def word_source(words_per_api_call=10, max_api_calls=100):
     api_url = 'http://api.wordnik.com/v4'
     api_key = os.environ['WORDNIK_API_KEY']
     client = swagger.ApiClient(api_key, api_url)
     words_api = WordsApi.WordsApi(client)
-    while True:
-        word = words_api.getRandomWord().word  # TODO: URLError potential here
-        logger.debug("word: %s", word)
-        yield word
-    # TODO: Limit number of requests, both usual and maximum.
+    for _ in range(max_api_calls):
+        words = words_api.getRandomWords(limit=words_per_api_call)
+        logger.debug("words: %s", words)
+        for word in words:
+            logger.debug("word: %s", word)
+            yield word.word
 
 
 @app.route('/')
