@@ -25,14 +25,14 @@ logger = logging.getLogger(script_name)
 
 CASE_FUNCTIONS = (lambda x: x.lower(), lambda x: x.upper(), lambda x: x.capitalize())
 
-DEFAULT_PATTERN = "WSW2|W2WS|WS2W|W2SW|WSW2W|W2WSW"
+DEFAULT_PATTERNS = ["WSW2", "W2WS", "WS2W", "W2SW", "WSW2W", "W2WSW"]
 DEFAULT_WORDFILE = "/usr/share/dict/words"
 DEFAULT_SYMBOLS = "-=[];\"'\\,./!@$%^*()_:<>?"
 DEFAULT_MAX_LENGTH = 128
 DEFAULT_WORD_LENGTH = 12
 
 SYMBOLS_HELP = "List of symbols to pick from to include in password."
-PATTERN_HELP = "Password pattern. " \
+PATTERNS_HELP = "Password pattern. " \
                "W=word, " \
                "U=upper-cased word, " \
                "L=lower-cased word, " \
@@ -67,8 +67,8 @@ def main(*argv):
 
 
 class AbstractPasswordGenerator(object):
-    def __init__(self, symbol_set=DEFAULT_SYMBOLS, patterns=DEFAULT_PATTERN.upper().split('|'),
-                 max_length=DEFAULT_MAX_LENGTH, max_word_length=DEFAULT_WORD_LENGTH):
+    def __init__(self, symbol_set=DEFAULT_SYMBOLS, patterns=DEFAULT_PATTERNS, max_length=DEFAULT_MAX_LENGTH,
+                 max_word_length=DEFAULT_WORD_LENGTH):
         self.patterns = patterns
         self.max_length = max_length
 
@@ -116,8 +116,8 @@ class AbstractPasswordGenerator(object):
 
 
 class FilePasswordGenerator(AbstractPasswordGenerator):
-    def __init__(self, symbol_set=DEFAULT_SYMBOLS, patterns=DEFAULT_PATTERN.upper().split('|'),
-                 max_length=DEFAULT_MAX_LENGTH, max_word_length=DEFAULT_WORD_LENGTH, wordfile=DEFAULT_WORDFILE):
+    def __init__(self, symbol_set=DEFAULT_SYMBOLS, patterns=DEFAULT_PATTERNS, max_length=DEFAULT_MAX_LENGTH,
+                 max_word_length=DEFAULT_WORD_LENGTH, wordfile=DEFAULT_WORDFILE):
         self.wordfile = wordfile
         super(FilePasswordGenerator, self).__init__(symbol_set=symbol_set, patterns=patterns, max_length=max_length,
                                                     max_word_length=max_word_length)
@@ -176,8 +176,8 @@ def get_options(argv):
                       help="Specify up to three times to increase verbosity, i.e. -v to see warnings, -vv for "
                            "information messages, or -vvv for debug messages.")
 
-    parser.add_option("-p", "--pattern", action="store", default=DEFAULT_PATTERN,
-                      help=PATTERN_HELP + " Defaults to %default. ")
+    parser.add_option("-p", "--pattern", action="store", default="|".join(DEFAULT_PATTERNS),
+                      help=PATTERNS_HELP + " Defaults to %default. ")
     parser.add_option("-w", "--wordfile", action="store", default=DEFAULT_WORDFILE,
                       help=WORDFILE_HELP + " Defaults to %default.")
     parser.add_option("-s", "--symbols", action="store", default=DEFAULT_SYMBOLS,
