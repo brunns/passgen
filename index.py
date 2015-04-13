@@ -25,6 +25,7 @@ def word_source():
         word = words_api.getRandomWord().word  # TODO: URLError potential here
         logger.debug("word: %s", word)
         yield word
+    # TODO: Limit number of requests, both usual and maximum.
 
 
 @app.route('/')
