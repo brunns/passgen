@@ -16,17 +16,22 @@ app = Flask(__name__)
 app.debug = bool(os.environ['DEBUG'])
 
 
-def word_source(words_per_api_call=10, max_api_calls=100):
-    api_url = 'http://api.wordnik.com/v4'
-    api_key = os.environ['WORDNIK_API_KEY']
-    client = swagger.ApiClient(api_key, api_url)
-    words_api = WordsApi.WordsApi(client)
-    for _ in range(max_api_calls):
-        words = words_api.getRandomWords(limit=words_per_api_call)
-        logger.debug("words: %s", words)
-        for word in words:
-            logger.debug("word: %s", word)
-            yield word.word
+class WordnikPasswordGenerator(passgen.AbstractPasswordGenerator):
+    def __init__(self, symbol_set=passgen.DEFAULT_SYMBOLS, patterns=passgen.DEFAULT_PATTERN.upper().split('|'),
+                 max_length=passgen.DEFAULT_MAX_LENGTH, max_word_length=passgen.DEFAULT_WORD_LENGTH):
+        super(WordnikPasswordGenerator, self).__init__(symbol_set, patterns, max_length, max_word_length)
+        api_url = 'http://api.wordnik.com/v4'
+        api_key = os.environ['WORDNIK_API_KEY']
+        client = swagger.ApiClient(api_key, api_url)
+        self.words_api = WordsApi.WordsApi(client)
+
+    def word_source(self, words_per_api_call=10, max_api_calls=100):
+        for _ in range(max_api_calls):
+            words = self.words_api.getRandomWords(limit=words_per_api_call)
+            logger.debug("words: %s", words)
+            for word in words:
+                logger.debug("word: %s", word)
+                yield word.word
 
 
 @app.route('/')
@@ -36,9 +41,9 @@ def password():
     max_length = int(request.args['max_length']) if 'max_length' in request.args else passgen.DEFAULT_MAX_LENGTH
 
     try:
-        generated_password = passgen.generate_password(word_source=word_source(), symbol_set=symbols,
-                                                       patterns=pattern.upper().split('|'),
-                                                       max_length=max_length)
+        password_generator = WordnikPasswordGenerator(symbol_set=symbols, patterns=pattern.upper().split('|'),
+                                                      max_length=max_length)
+        generated_password = password_generator.next()
         error = False
     except passgen.PasswordsTooShort:
         generated_password = passgen.PASSWORD_LENGTH_EXCEPTION_MESSAGE % max_length
