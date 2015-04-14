@@ -3,7 +3,7 @@
 """
 Simple Flask app for generating passwords
 """
-
+from urllib2 import URLError
 from flask import Flask, render_template, request
 from wordnik import swagger, WordsApi
 import logging
@@ -27,7 +27,7 @@ class WordnikPasswordGenerator(passgen.AbstractPasswordGenerator):
 
     def word_source(self, words_per_api_call=10, max_api_calls=100):
         for _ in range(max_api_calls):
-            words = self.words_api.getRandomWords(limit=words_per_api_call)  # TODO: Potential URLError here if API unavailable
+            words = self.words_api.getRandomWords(limit=words_per_api_call)
             logger.debug("words: %s", words)
             for word in words:
                 logger.debug("word: %s", word)
@@ -46,6 +46,9 @@ def password():
         error = False
     except passgen.PasswordsTooShort:
         generated_password = passgen.PASSWORD_LENGTH_EXCEPTION_MESSAGE % max_length
+        error = True
+    except URLError as url_error:
+        generated_password = 'Failed to get random words from external service: "%s"' % url_error.reason
         error = True
     return render_template('password.html', password=generated_password, symbols=symbols, patterns="|".join(patterns),
                            max_length=max_length, symbols_help=passgen.SYMBOLS_HELP,
