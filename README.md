@@ -21,9 +21,10 @@ You'll also need a developer key from [Worknik](http://developer.wordnik.com/).
 
 [Getting Started with Python on Heroku](https://devcenter.heroku.com/articles/getting-started-with-python-o) is a pretty good starting point.
 
-### Activating virtualenv
+### Creating and activating virtualenv
 
-    $ source venv/bin/activate
+    $ virtualenv venv --no-site-packages # Only once
+    $ source venv/bin/activate # Every time
 
 ### Installing dependencies in virtualenv
 
