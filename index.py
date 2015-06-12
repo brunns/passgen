@@ -37,7 +37,7 @@ class WordnikPasswordGenerator(passgen.AbstractPasswordGenerator):
 @app.route('/')
 def password():
     symbols = request.args['symbols'] if 'symbols' in request.args else passgen.DEFAULT_SYMBOLS
-    patterns = request.args['pattern'].upper().split('|') if 'pattern' in request.args else passgen.DEFAULT_PATTERNS
+    patterns = request.args['patterns'].upper().split('|') if 'patterns' in request.args else passgen.DEFAULT_PATTERNS
     max_length = int(request.args['max_length']) if 'max_length' in request.args else passgen.DEFAULT_MAX_LENGTH
 
     try:
