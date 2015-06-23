@@ -36,6 +36,7 @@ You'll need to create a `.env` file containing:
 
     WORDNIK_API_KEY=[Your Worknik key here]
     DEBUG=True
+    COOKIE_SECRET_KEY=[Big random string]
 
 ### Running the app
 
