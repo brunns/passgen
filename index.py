@@ -40,7 +40,7 @@ class WordnikPasswordGenerator(passgen.AbstractPasswordGenerator):
 
 
 @app.route('/')
-def password():
+def generate():
     symbols = session.get('symbols', passgen.DEFAULT_SYMBOLS)
     patterns = session.get('patterns', "|".join(passgen.DEFAULT_PATTERNS))
     max_length = session.get('max_length', "%s" % passgen.DEFAULT_MAX_LENGTH)
@@ -66,22 +66,22 @@ def password():
     return render_template(view, **model)
 
 
-@app.route('/generate', methods=['POST'])
-def generate():
+@app.route('/set-options', methods=['POST'])
+def set_options():
     session['symbols'] = request.form['symbols']
     session['patterns'] = request.form['patterns']
     session['max_length'] = request.form['max_length']
 
-    return redirect(url_for('password'))
+    return redirect(url_for('generate'))
 
 
-@app.route('/reset', methods=['POST'])
-def reset():
+@app.route('/reset-options', methods=['POST'])
+def reset_options():
     del session['symbols']
     del session['patterns']
     del session['max_length']
 
-    return redirect(url_for('password'))
+    return redirect(url_for('generate'))
 
 
 if __name__ == "__main__":
