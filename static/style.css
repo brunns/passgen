@@ -1,15 +1,5 @@
-h1 {
-    color: blue;
-}
-
 @media screen and (max-width: 1024px) {
     body {
         font-size:300%;
-    }
-}
-
-@media screen and (max-width: 1024px) {
-    h1 {
-        color: red;
     }
 }
