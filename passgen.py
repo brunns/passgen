@@ -78,6 +78,7 @@ class PasswordGenerator(object):
         self.max_length = max_length
         self.word_source = word_source
 
+        # TODO Push word length filter into the WordSource, which will make the entropy calculation more accurate
         words = (word.strip()
                  for word
                  in self.word_source.words()
@@ -120,11 +121,10 @@ class PasswordGenerator(object):
 
     @property
     def entropy(self):
-        word_source_length = self.word_source.length
-        element_values = {"W": math.log(len(CASE_FUNCTIONS), 2) + math.log(word_source_length, 2),
-                          "U": math.log(word_source_length, 2),
-                          "L": math.log(word_source_length, 2),
-                          "C": math.log(word_source_length, 2),
+        element_values = {"W": math.log(len(CASE_FUNCTIONS), 2) + math.log(self.word_source.length, 2),
+                          "U": math.log(self.word_source.length, 2),
+                          "L": math.log(self.word_source.length, 2),
+                          "C": math.log(self.word_source.length, 2),
                           "S": math.log(len(self.symbol_set), 2),
                           " ": 0}
         for length in range(1, 10):

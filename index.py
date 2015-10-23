@@ -31,6 +31,9 @@ class WordnikWordSource(object):
         self.words_per_api_call = words_per_api_call
         self.max_api_calls = max_api_calls
 
+        # TODO Hard coded for now, as per https://en.wikipedia.org/wiki/Wordnik, but I'd like a better way
+        self.length = 6925967
+
     def words(self):
         for _ in range(self.max_api_calls):
             words = self.words_api.getRandomWords(limit=self.words_per_api_call)
@@ -56,6 +59,7 @@ def generate():
         password_generator = passgen.PasswordGenerator(word_source, symbol_set=symbols,
                                                        patterns=patterns.upper().split('|'), max_length=int(max_length))
         model['password'] = password_generator.next()
+        model['entropy'] = password_generator.entropy
         model['error'] = False
     except passgen.PasswordsTooShort:
         model['password'] = passgen.PASSWORD_LENGTH_EXCEPTION_MESSAGE % max_length
