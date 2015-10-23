@@ -4,6 +4,7 @@
 Generate password.
 """
 import optparse
+import math
 import re
 import os
 import sys
@@ -46,6 +47,7 @@ PATTERNS_HELP = "Password pattern. " \
 WORDFILE_HELP = "Text file containing list of words."
 MAX_LENGTH_HELP = "Maximum length for generated password."
 MAX_WORD_LENGTH_HELP = "Maximum length for word elements."
+ENTROPY_HELP = "Display the entropy of the generated password."
 
 PASSWORD_LENGTH_EXCEPTION_MESSAGE = "Unable to generate password with length %s. " \
                                     "Try a shorter pattern, or a longer password length."
@@ -62,6 +64,8 @@ def main(*argv):
         password_generator = PasswordGenerator(word_source, symbol_set=options.symbols, patterns=patterns,
                                                max_length=options.max_length, max_word_length=options.max_word_length)
         print password_generator.next()
+        if options.entropy:
+            print password_generator.entropy
     except PasswordsTooShort as passwords_too_short:
         print PASSWORD_LENGTH_EXCEPTION_MESSAGE % passwords_too_short.max_length
 
@@ -69,6 +73,7 @@ def main(*argv):
 class PasswordGenerator(object):
     def __init__(self, word_source, symbol_set=DEFAULT_SYMBOLS, patterns=DEFAULT_PATTERNS, max_length=DEFAULT_MAX_LENGTH,
                  max_word_length=DEFAULT_WORD_LENGTH):
+        self.symbol_set = symbol_set
         self.patterns = patterns
         self.max_length = max_length
         self.word_source = word_source
@@ -83,7 +88,7 @@ class PasswordGenerator(object):
         lower = (word.lower() for word in words)
         capitalised = (word.capitalize() for word in words)
 
-        symbols = repeatfunc(lambda: "".join(random.sample(symbol_set, random.randint(1, 3))))
+        symbols = repeatfunc(lambda: "".join(random.sample(self.symbol_set, random.randint(1, 3))))
         spaces = itertools.repeat(" ")
 
         self.password_element_iterators = {"W": random_cased_words,
@@ -99,12 +104,13 @@ class PasswordGenerator(object):
         return self
 
     def next(self):
-        pattern = random.choice(self.patterns)
-        logger.debug("pattern, %s", pattern)
+        self.pattern = random.choice(self.patterns)
+        logger.debug("pattern, %s", self.pattern)
 
         while 1:
             try:
-                candidate = "".join([self.password_element_iterators[pattern_element].next() for pattern_element in pattern])
+                candidate = "".join([self.password_element_iterators[pattern_element].next() for pattern_element in
+                                     self.pattern])
             except StopIteration:
                 raise PasswordsTooShort(self.max_length)
 
@@ -112,6 +118,19 @@ class PasswordGenerator(object):
             if len(candidate) <= self.max_length:
                 return candidate
 
+    @property
+    def entropy(self):
+        word_source_length = self.word_source.length
+        element_values = {"W": math.log(len(CASE_FUNCTIONS), 2) + math.log(word_source_length, 2),
+                          "U": math.log(word_source_length, 2),
+                          "L": math.log(word_source_length, 2),
+                          "C": math.log(word_source_length, 2),
+                          "S": math.log(len(self.symbol_set), 2),
+                          " ": 0}
+        for length in range(1, 10):
+            element_values['%s' % length] = math.log(10**length, 2)
+
+        return sum(element_values[element] for element in self.pattern) + math.log(len(self.patterns), 2)
 
 class FileWordSource(object):
     def __init__(self, wordfile=DEFAULT_WORDFILE):
@@ -120,7 +139,9 @@ class FileWordSource(object):
 
     def words(self):
         with open(self.wordfile) as allwords:
-            return random_items(allwords, 999)
+            words, self.length = random_items(allwords, 999)
+            logger.debug("word source length %s", self.length)
+            return words
 
 
 def random_items(iterable, items_wanted=1):
@@ -139,7 +160,7 @@ def random_items(iterable, items_wanted=1):
             if target < items_wanted:
                 result[target] = item
     random.shuffle(result)
-    return result
+    return result, index+1
 
 
 def repeatfunc(func, times=None, *args):
@@ -182,6 +203,7 @@ def get_options(argv):
                       help=MAX_LENGTH_HELP + " Defaults to %default.")
     parser.add_option("--max-word-length", action="store", type="int", default=DEFAULT_WORD_LENGTH,
                       help=MAX_WORD_LENGTH_HELP + " Defaults to %default.")
+    parser.add_option("-e", "--entropy", action="store_true", help=ENTROPY_HELP)
 
     options, args = parser.parse_args(list(argv))
     script, args = args[0], args[1:]
