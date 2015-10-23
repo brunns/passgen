@@ -22,17 +22,18 @@ API_KEY = os.environ['WORDNIK_API_KEY']
 API_URL = 'http://api.wordnik.com/v4'
 
 
-class WordnikPasswordGenerator(passgen.AbstractPasswordGenerator):
-    def __init__(self, symbol_set=passgen.DEFAULT_SYMBOLS, patterns=passgen.DEFAULT_PATTERNS,
-                 max_length=passgen.DEFAULT_MAX_LENGTH, max_word_length=passgen.DEFAULT_WORD_LENGTH):
-        super(WordnikPasswordGenerator, self).__init__(symbol_set, patterns, max_length, max_word_length)
+class WordnikWordSource(object):
+    def __init__(self, api_url=API_URL, api_key=API_KEY, max_api_calls=100, words_per_api_call=10):
+        super(WordnikWordSource, self).__init__()
 
-        client = swagger.ApiClient(API_KEY, API_URL)
+        client = swagger.ApiClient(api_key, api_url)
         self.words_api = WordsApi.WordsApi(client)
+        self.words_per_api_call = words_per_api_call
+        self.max_api_calls = max_api_calls
 
-    def word_source(self, words_per_api_call=10, max_api_calls=100):
-        for _ in range(max_api_calls):
-            words = self.words_api.getRandomWords(limit=words_per_api_call)
+    def words(self):
+        for _ in range(self.max_api_calls):
+            words = self.words_api.getRandomWords(limit=self.words_per_api_call)
             logger.debug("words: %s", words)
             for word in words:
                 logger.debug("word: %s", word)
@@ -51,9 +52,9 @@ def generate():
              'maxlength_help': passgen.MAX_LENGTH_HELP}
 
     try:
-        password_generator = WordnikPasswordGenerator(symbol_set=symbols,
-                                                      patterns=patterns.upper().split('|'),
-                                                      max_length=int(max_length))
+        word_source = WordnikWordSource()
+        password_generator = passgen.PasswordGenerator(word_source, symbol_set=symbols,
+                                                       patterns=patterns.upper().split('|'), max_length=int(max_length))
         model['password'] = password_generator.next()
         model['error'] = False
     except passgen.PasswordsTooShort:

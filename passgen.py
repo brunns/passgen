@@ -58,23 +58,24 @@ def main(*argv):
 
     patterns = options.pattern.upper().split('|')
     try:
-        password_generator = FilePasswordGenerator(symbol_set=options.symbols, patterns=patterns,
-                                                   max_length=options.max_length,
-                                                   max_word_length=options.max_word_length, wordfile=options.wordfile)
+        word_source = FileWordSource(wordfile=options.wordfile)
+        password_generator = PasswordGenerator(word_source, symbol_set=options.symbols, patterns=patterns,
+                                               max_length=options.max_length, max_word_length=options.max_word_length)
         print password_generator.next()
     except PasswordsTooShort as passwords_too_short:
         print PASSWORD_LENGTH_EXCEPTION_MESSAGE % passwords_too_short.max_length
 
 
-class AbstractPasswordGenerator(object):
-    def __init__(self, symbol_set=DEFAULT_SYMBOLS, patterns=DEFAULT_PATTERNS, max_length=DEFAULT_MAX_LENGTH,
+class PasswordGenerator(object):
+    def __init__(self, word_source, symbol_set=DEFAULT_SYMBOLS, patterns=DEFAULT_PATTERNS, max_length=DEFAULT_MAX_LENGTH,
                  max_word_length=DEFAULT_WORD_LENGTH):
         self.patterns = patterns
         self.max_length = max_length
+        self.word_source = word_source
 
         words = (word.strip()
                  for word
-                 in self.word_source()
+                 in self.word_source.words()
                  if len(word.strip()) < max_word_length and re.match(r'\w+$', word))
 
         random_cased_words = (random.choice(CASE_FUNCTIONS)(word) for word in words)
@@ -111,18 +112,13 @@ class AbstractPasswordGenerator(object):
             if len(candidate) <= self.max_length:
                 return candidate
 
-    def word_source(self):
-        raise NotImplementedError()
 
-
-class FilePasswordGenerator(AbstractPasswordGenerator):
-    def __init__(self, symbol_set=DEFAULT_SYMBOLS, patterns=DEFAULT_PATTERNS, max_length=DEFAULT_MAX_LENGTH,
-                 max_word_length=DEFAULT_WORD_LENGTH, wordfile=DEFAULT_WORDFILE):
+class FileWordSource(object):
+    def __init__(self, wordfile=DEFAULT_WORDFILE):
         self.wordfile = wordfile
-        super(FilePasswordGenerator, self).__init__(symbol_set=symbol_set, patterns=patterns, max_length=max_length,
-                                                    max_word_length=max_word_length)
+        super(FileWordSource, self).__init__()
 
-    def word_source(self):
+    def words(self):
         with open(self.wordfile) as allwords:
             return random_items(allwords, 999)
 
