@@ -65,7 +65,7 @@ def main(*argv):
                                                max_length=options.max_length, max_word_length=options.max_word_length)
         print password_generator.next()
         if options.entropy:
-            print password_generator.entropy
+            print "%.2f" % password_generator.entropy
     except PasswordsTooShort as passwords_too_short:
         print PASSWORD_LENGTH_EXCEPTION_MESSAGE % passwords_too_short.max_length
 
@@ -78,12 +78,7 @@ class PasswordGenerator(object):
         self.max_length = max_length
         self.word_source = word_source
 
-        # TODO Push word length filter into the WordSource, which will make the entropy calculation more accurate
-        words = (word.strip()
-                 for word
-                 in self.word_source.words()
-                 if len(word.strip()) < max_word_length and re.match(r'\w+$', word))
-
+        words = (word.strip() for word in self.word_source.words(max_word_length))
         random_cased_words = (random.choice(CASE_FUNCTIONS)(word) for word in words)
         upper = (word.upper() for word in words)
         lower = (word.lower() for word in words)
@@ -137,14 +132,16 @@ class FileWordSource(object):
         self.wordfile = wordfile
         super(FileWordSource, self).__init__()
 
-    def words(self):
+    def words(self, max_word_length):
         with open(self.wordfile) as allwords:
-            words, self.length = random_items(allwords, 999)
+            words, self.length = random_items(allwords, 99,
+                                              lambda word: len(word.strip()) < max_word_length
+                                                     and re.match(r'\w+$', word))
             logger.debug("word source length %s", self.length)
             return words
 
 
-def random_items(iterable, items_wanted=1):
+def random_items(iterable, items_wanted=1, filter=lambda x: (True)):
     """Pick random items with equal probability from an iterable, iterating only once.
 
     http://code.activestate.com/recipes/426332/
@@ -152,7 +149,7 @@ def random_items(iterable, items_wanted=1):
     See also http://en.wikipedia.org/wiki/Reservoir_sampling
     """
     result = [None] * items_wanted
-    for index, item in enumerate(iterable):
+    for index, item in enumerate(item for item in iterable if filter(item)):
         if index < items_wanted:
             result[index] = item
         else:

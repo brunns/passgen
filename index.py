@@ -23,7 +23,7 @@ API_URL = 'http://api.wordnik.com/v4'
 
 
 class WordnikWordSource(object):
-    def __init__(self, api_url=API_URL, api_key=API_KEY, max_api_calls=100, words_per_api_call=10):
+    def __init__(self, api_url=API_URL, api_key=API_KEY, max_api_calls=10, words_per_api_call=10):
         super(WordnikWordSource, self).__init__()
 
         client = swagger.ApiClient(api_key, api_url)
@@ -35,9 +35,9 @@ class WordnikWordSource(object):
         # but I'd like a better way
         self.length = 1500000
 
-    def words(self):
+    def words(self, max_word_length):
         for _ in range(self.max_api_calls):
-            words = self.words_api.getRandomWords(limit=self.words_per_api_call)
+            words = self.words_api.getRandomWords(limit=self.words_per_api_call, maxLength=max_word_length)
             logger.debug("words: %s", words)
             for word in words:
                 logger.debug("word: %s", word)
