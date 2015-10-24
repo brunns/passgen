@@ -31,8 +31,9 @@ class WordnikWordSource(object):
         self.words_per_api_call = words_per_api_call
         self.max_api_calls = max_api_calls
 
-        # TODO Hard coded for now, as per https://en.wikipedia.org/wiki/Wordnik, but I'd like a better way
-        self.length = 6925967
+        # TODO Hard coded for now, as per https://groups.google.com/d/msg/wordnik-api/pXNsaR7IMac/vvPlR36aAgAJ,
+        # but I'd like a better way
+        self.length = 1500000
 
     def words(self):
         for _ in range(self.max_api_calls):
