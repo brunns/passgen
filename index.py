@@ -3,7 +3,7 @@
 """
 Simple Flask app for generating passwords
 """
-from urllib2 import URLError
+from urllib.error import URLError
 from flask import Flask, redirect, render_template, request, session, url_for
 from wordnik import swagger, WordsApi
 import logging
