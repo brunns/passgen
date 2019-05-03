@@ -3,6 +3,8 @@
 """
 Generate password.
 """
+from __future__ import unicode_literals, absolute_import, division, print_function
+
 import optparse
 import math
 import re
@@ -12,6 +14,7 @@ import warnings
 import random
 import logging
 import itertools
+import six
 
 __author__ = 'Simon Brunning'
 __version__ = "0.11"
@@ -63,11 +66,11 @@ def main(*argv):
         word_source = FileWordSource(wordfile=options.wordfile)
         password_generator = PasswordGenerator(word_source, symbol_set=options.symbols, patterns=patterns,
                                                max_length=options.max_length, max_word_length=options.max_word_length)
-        print password_generator.next()
+        print(six.next(password_generator))
         if options.entropy:
-            print "%.2f" % password_generator.entropy
+            print("%.2f" % password_generator.entropy)
     except PasswordsTooShort as passwords_too_short:
-        print PASSWORD_LENGTH_EXCEPTION_MESSAGE % passwords_too_short.max_length
+        print(PASSWORD_LENGTH_EXCEPTION_MESSAGE % passwords_too_short.max_length)
 
 
 class PasswordGenerator(object):
@@ -99,13 +102,13 @@ class PasswordGenerator(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         self.pattern = random.choice(self.patterns)
         logger.debug("pattern, %s", self.pattern)
 
         while 1:
             try:
-                candidate = "".join([self.password_element_iterators[pattern_element].next() for pattern_element in
+                candidate = "".join([six.next(self.password_element_iterators[pattern_element]) for pattern_element in
                                      self.pattern])
             except StopIteration:
                 raise PasswordsTooShort(self.max_length)

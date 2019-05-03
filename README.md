@@ -6,7 +6,7 @@ Simple Flask on heroku app to generate strong passwords.
 
 You'll need the following installed:
 
-* [Python 2.x](https://www.python.org/)
+* [Python 3.x](https://www.python.org/)
 * [Heroku Toolbelt](https://toolbelt.heroku.com/)
 * [Virtualenv](https://virtualenv.pypa.io/)
 
