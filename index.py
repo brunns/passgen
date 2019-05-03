@@ -9,6 +9,7 @@ from wordnik import swagger, WordsApi
 import logging
 import os
 import passgen
+import six
 
 
 logger = logging.getLogger(__name__)
@@ -59,7 +60,7 @@ def generate():
         word_source = WordnikWordSource()
         password_generator = passgen.PasswordGenerator(word_source, symbol_set=symbols,
                                                        patterns=patterns.upper().split('|'), max_length=int(max_length))
-        model['password'] = password_generator.next()
+        model['password'] = six.next(password_generator)
         model['entropy'] = password_generator.entropy
         model['error'] = False
     except passgen.PasswordsTooShort:
