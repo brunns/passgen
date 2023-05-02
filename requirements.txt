@@ -1,4 +1,4 @@
-Flask~=1.0
+Flask~=2.0
 wordnik-py3~=2.1
 six~=1.0
 gunicorn~=19.0
