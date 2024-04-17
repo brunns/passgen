@@ -1,4 +1,4 @@
 Flask~=3.0
 wordnik-py3~=2.1
 six~=1.0
-gunicorn~=21.0
+gunicorn~=22.0
